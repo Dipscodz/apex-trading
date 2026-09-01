@@ -4,6 +4,7 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  password?: string;
   role: UserRole;
   balance: number; // Cash balance in USD
   profitMultiplier: number; // e.g., 1.0 (default), 1.25, 1.5

@@ -16,6 +16,7 @@ interface AppContextType {
   currentUser: User | null;
   users: User[];
   login: (email: string, password: string) => { success: boolean; message: string };
+  verifyCredentials: (email: string, password: string) => { success: boolean; message: string };
   signup: (name: string, email: string, password: string) => { success: boolean; message: string };
   logout: () => void;
 
@@ -38,7 +39,7 @@ interface AppContextType {
   auditLogs: AdminAuditLog[];
   updateUserBalance: (targetUserId: string, newBalance: number, reason?: string) => void;
   setUserPriceOverride: (targetUserId: string, symbol: string, customPrice: number) => void;
-  removeUserPriceOverride: (targetUserId: string, symbol: string) => void;
+  removeUserPriceOverride: (targetUserId: string, symbol: symbol) => void;
   allocateProfitLoss: (targetUserId: string, amount: number, details: string) => void;
   setUserProfitMultiplier: (targetUserId: string, multiplier: number) => void;
   toggleUserStatus: (targetUserId: string, status: 'active' | 'frozen' | 'suspended') => void;
@@ -54,6 +55,7 @@ const DEFAULT_USERS: User[] = [
     id: 'usr_admin_01',
     name: 'Chief Admin',
     email: 'admin@apexquantum.io',
+    password: 'AdminApex2026!',
     role: 'admin',
     balance: 150000.00,
     profitMultiplier: 1.0,
@@ -66,6 +68,7 @@ const DEFAULT_USERS: User[] = [
     id: 'usr_trader_01',
     name: 'Institutional Client',
     email: 'trader@apexquantum.io',
+    password: 'trader123',
     role: 'user',
     balance: 35000.00,
     profitMultiplier: 1.2,
@@ -78,6 +81,7 @@ const DEFAULT_USERS: User[] = [
     id: 'usr_trader_02',
     name: 'Alexander Wright',
     email: 'alex.wright@quantumcap.com',
+    password: 'alex123',
     role: 'user',
     balance: 50000.00,
     profitMultiplier: 1.0,
@@ -283,7 +287,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return marketCoin ? marketCoin.current_price : 0;
   };
 
-  // Auth Methods
+  const verifyCredentials = (email: string, pass: string) => {
+    const formattedEmail = email.trim().toLowerCase();
+    const found = users.find(
+      (u) => u.email.toLowerCase() === formattedEmail && (u.password === pass || !u.password)
+    );
+
+    if (!found) {
+      return { success: false, message: 'Invalid email or password.' };
+    }
+
+    if (found.status === 'frozen' || found.status === 'suspended') {
+      return { success: false, message: 'Account suspended or pending verification.' };
+    }
+
+    return { success: true, message: `Credentials verified for ${found.name}` };
+  };
+
   const login = (email: string, pass: string) => {
     const formattedEmail = email.trim().toLowerCase();
     
@@ -319,6 +339,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: `usr_${Date.now()}`,
       name: name.trim(),
       email: formattedEmail,
+      password: pass,
       role: 'user',
       balance: 10000.00, // Welcome starting capital
       profitMultiplier: 1.0,
@@ -643,6 +664,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentUser,
         users,
         login,
+        verifyCredentials,
         signup,
         logout,
         markets,
