@@ -39,7 +39,7 @@ interface AppContextType {
   auditLogs: AdminAuditLog[];
   updateUserBalance: (targetUserId: string, newBalance: number, reason?: string) => void;
   setUserPriceOverride: (targetUserId: string, symbol: string, customPrice: number) => void;
-  removeUserPriceOverride: (targetUserId: string, symbol: symbol) => void;
+  removeUserPriceOverride: (targetUserId: string, symbol: string) => void;
   allocateProfitLoss: (targetUserId: string, amount: number, details: string) => void;
   setUserProfitMultiplier: (targetUserId: string, multiplier: number) => void;
   toggleUserStatus: (targetUserId: string, status: 'active' | 'frozen' | 'suspended') => void;
