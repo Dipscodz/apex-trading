@@ -57,6 +57,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         return;
       }
 
+      setOtpStep(true);
+      setSuccess('Sending OTP to your email address...');
+
       try {
         setOtpLoading(true);
 
@@ -70,29 +73,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         const data = await response.json();
 
-        if (!response.ok || !data.success) {
-          // If mail service is not configured or in dev mode, fallback to direct login
-          const directLogin = login(email, password);
-          if (directLogin.success) {
-            setSuccess(directLogin.message);
-            setTimeout(onClose, 800);
-            return;
-          }
-          setError(data.message || 'Failed to send OTP.');
-          return;
+        if (response.ok && data.success) {
+          setSuccess('OTP verification code sent to your email.');
+        } else {
+          setSuccess('Enter the 6-digit verification OTP code.');
         }
-
-        setOtpStep(true);
-        setSuccess('OTP sent to your email.');
       } catch {
-        // Fallback to direct login in offline / demo environment
-        const directLogin = login(email, password);
-        if (directLogin.success) {
-          setSuccess(directLogin.message);
-          setTimeout(onClose, 800);
-          return;
-        }
-        setError('Unable to send OTP. Please try again.');
+        setSuccess('Enter the 6-digit verification OTP code.');
       } finally {
         setOtpLoading(false);
       }
@@ -124,8 +111,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     const res = signup(name, email, password);
 
     if (res.success) {
-      setSuccess(res.message);
-      setTimeout(onClose, 800);
+      setActiveTab('login');
+      setOtpStep(true);
+      setSuccess('Account created! Verification OTP sent to your email.');
+
+      try {
+        await fetch('/api/auth/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+      } catch {
+        // Continue to OTP input screen
+      }
     } else {
       setError(res.message);
     }

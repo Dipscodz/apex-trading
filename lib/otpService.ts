@@ -46,7 +46,7 @@ export function generateOTP(email: string) {
   });
 
   console.log(
-    `OTP generated for ${normalizedEmail}. Expires in 5 minutes.`
+    `🔒 [EMAIL OTP] Generated 6-digit OTP for ${normalizedEmail}: >>> ${otp} <<< (Expires in 5 mins)`
   );
 
   return otp;
