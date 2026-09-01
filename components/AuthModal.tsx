@@ -222,7 +222,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {/* Tab Navigation */}
-        <div className="grid grid-cols-3 bg-slate-950/60 p-1.5 border-b border-slate-800 text-xs font-semibold text-slate-400">
+        <div className="grid grid-cols-2 bg-slate-950/60 p-1.5 border-b border-slate-800 text-xs font-semibold text-slate-400">
           <button
             type="button"
             onClick={() => {
@@ -245,19 +245,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               activeTab === 'signup' ? 'bg-sky-600 text-white shadow-md' : 'hover:text-slate-200'
             }`}
           >
-            Register
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('admin');
-              resetOTP();
-            }}
-            className={`py-2 rounded-lg transition-all ${
-              activeTab === 'admin' ? 'bg-emerald-600 text-white shadow-md' : 'hover:text-slate-200'
-            }`}
-          >
-            Admin Terminal
+            Register Account
           </button>
         </div>
 
@@ -395,16 +383,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   <button
                     type="button"
                     onClick={fillDemoUser}
-                    className="flex-1 py-1.5 px-3 rounded-lg text-xs bg-slate-800/80 hover:bg-slate-700 text-sky-300 border border-sky-500/20 text-center transition-colors"
+                    className="w-full py-1.5 px-3 rounded-lg text-xs bg-slate-800/80 hover:bg-slate-700 text-sky-300 border border-sky-500/20 text-center transition-colors"
                   >
-                    Fill User Credentials
-                  </button>
-                  <button
-                    type="button"
-                    onClick={fillDemoAdmin}
-                    className="flex-1 py-1.5 px-3 rounded-lg text-xs bg-slate-800/80 hover:bg-slate-700 text-emerald-300 border border-emerald-500/20 text-center transition-colors"
-                  >
-                    Fill Admin Credentials
+                    Fill Client Credentials
                   </button>
                 </div>
               </div>

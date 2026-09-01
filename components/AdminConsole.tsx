@@ -66,13 +66,12 @@ export const AdminConsole: React.FC = () => {
         <p className="text-slate-400 text-xs">
           You must be authenticated with Chief Administrator credentials to access user share prices and profit management.
         </p>
-        <button
-          onClick={() => setIsAuthOpen(true)}
-          className="px-6 py-3 rounded-xl font-extrabold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/50 transition-all"
+        <a
+          href="/admin/login"
+          className="inline-block px-6 py-3 rounded-xl font-extrabold text-xs bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/50 transition-all"
         >
-          Authenticate Admin Credentials
-        </button>
-        <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} defaultTab="admin" />
+          Go to Executive Admin Gate →
+        </a>
       </div>
     );
   }

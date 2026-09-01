@@ -167,11 +167,10 @@ export const Navbar: React.FC = () => {
                   <span>Login</span>
                 </button>
                 <button
-                  onClick={() => openAuth('admin')}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/40 transition-all flex items-center gap-1.5"
+                  onClick={() => openAuth('signup')}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-sky-600 hover:bg-sky-500 text-white shadow-lg shadow-sky-950/40 transition-all flex items-center gap-1.5"
                 >
-                  <ShieldCheck className="w-4 h-4" />
-                  <span>Admin Terminal</span>
+                  <span>Register Account</span>
                 </button>
               </div>
             )}
