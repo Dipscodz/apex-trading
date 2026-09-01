@@ -16,6 +16,10 @@ interface AppContextType {
   currentUser: User | null;
   users: User[];
   login: (email: string, password: string) => { success: boolean; message: string };
+  verifyCredentials: (
+    email: string,
+    password: string
+  ) => { success: boolean; message: string };
   signup: (name: string, email: string, password: string) => { success: boolean; message: string };
   logout: () => void;
 
@@ -54,6 +58,7 @@ const DEFAULT_USERS: User[] = [
     id: 'usr_admin_01',
     name: 'Chief Admin',
     email: 'admin@apexquantum.io',
+    password: 'admin123',
     role: 'admin',
     balance: 150000.00,
     profitMultiplier: 1.0,
@@ -66,6 +71,7 @@ const DEFAULT_USERS: User[] = [
     id: 'usr_trader_01',
     name: 'Institutional Client',
     email: 'trader@apexquantum.io',
+    password: 'trader123',
     role: 'user',
     balance: 35000.00,
     profitMultiplier: 1.2,
@@ -78,6 +84,7 @@ const DEFAULT_USERS: User[] = [
     id: 'usr_trader_02',
     name: 'Alexander Wright',
     email: 'alex.wright@quantumcap.com',
+    password: 'alex123',
     role: 'user',
     balance: 50000.00,
     profitMultiplier: 1.0,
@@ -158,7 +165,7 @@ const LOCAL_STORAGE_KEY = 'apex_quantum_app_state_v2';
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [markets, setMarkets] = useState<CryptoMarketData[]>(INITIAL_CRYPTO_DATA);
   const [users, setUsers] = useState<User[]>(DEFAULT_USERS);
-  const [currentUser, setCurrentUser] = useState<User | null>(DEFAULT_USERS[1]); // Default logged in as demo client
+  const [currentUser, setCurrentUser] = useState<User | null>(null); // Default logged in as demo client
   const [positions, setPositions] = useState<TradePosition[]>(DEFAULT_POSITIONS);
   const [adminOverrides, setAdminOverrides] = useState<UserPriceOverride[]>([]);
   const [transactions, setTransactions] = useState<TransactionRecord[]>(DEFAULT_TRANSACTIONS);
@@ -284,6 +291,39 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Auth Methods
+
+  // Verify email + password before sending the OTP.
+  // This function only checks credentials; it does not log the user in.
+  const verifyCredentials = (email: string, pass: string) => {
+    const formattedEmail = email.trim().toLowerCase();
+
+    const found = users.find(
+      (u) =>
+        u.email.toLowerCase() === formattedEmail &&
+        u.password === pass
+    );
+
+    if (!found) {
+      return {
+        success: false,
+        message: 'Invalid email or password.',
+      };
+    }
+
+    if (found.status === 'frozen' || found.status === 'suspended') {
+      return {
+        success: false,
+        message:
+          'Account suspended or pending verification. Please contact support.',
+      };
+    }
+
+    return {
+      success: true,
+      message: `Credentials verified for ${found.name}`,
+    };
+  };
+
   const login = (email: string, pass: string) => {
     const formattedEmail = email.trim().toLowerCase();
     
@@ -319,6 +359,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: `usr_${Date.now()}`,
       name: name.trim(),
       email: formattedEmail,
+      password: pass,
       role: 'user',
       balance: 10000.00, // Welcome starting capital
       profitMultiplier: 1.0,
@@ -629,8 +670,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const resetToDefaultData = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
+
     setUsers(DEFAULT_USERS);
-    setCurrentUser(DEFAULT_USERS[1]);
+    setCurrentUser(null);
     setPositions(DEFAULT_POSITIONS);
     setAdminOverrides([]);
     setTransactions(DEFAULT_TRANSACTIONS);
@@ -643,6 +685,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         currentUser,
         users,
         login,
+        verifyCredentials,
         signup,
         logout,
         markets,

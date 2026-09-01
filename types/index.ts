@@ -4,12 +4,13 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: UserRole;
-  balance: number; // Cash balance in USD
-  profitMultiplier: number; // e.g., 1.0 (default), 1.25, 1.5
+  password: string;
+  role: 'admin' | 'user';
+  balance: number;
+  profitMultiplier: number;
   status: 'active' | 'frozen' | 'suspended';
   createdAt: string;
-  lastLogin: string;
+  lastLogin?: string;
   notes?: string;
 }
 
