@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 import { Resend } from "resend";
 import { generateOTP } from "@/lib/otpService";
 
@@ -16,96 +17,107 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!process.env.RESEND_API_KEY) {
-      console.error("RESEND_API_KEY is missing.");
-
-      return NextResponse.json(
-        {
-          success: false,
-          message: "Resend API key is not configured.",
-        },
-        { status: 500 }
-      );
-    }
-
-    const resend = new Resend(process.env.RESEND_API_KEY);
-
     const normalizedEmail = email.toLowerCase().trim();
-
     const otp = generateOTP(normalizedEmail);
 
-    const { data, error } = await resend.emails.send({
-      from:
-        process.env.OTP_FROM_EMAIL ||
-        "Apex Quantum <onboarding@resend.dev>",
-      to: [normalizedEmail],
-      subject: "Your Apex Quantum Login OTP",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
-          <h2 style="color: #0284c7;">
-            Apex Quantum
-          </h2>
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailAppPassword = process.env.GMAIL_APP_PASSWORD;
 
-          <p>Your login verification code is:</p>
+    // ============================================================
+    // OPTION 1: GMAIL SMTP (Sends real emails to ANY address)
+    // ============================================================
+    if (gmailUser && gmailAppPassword) {
+      try {
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: gmailUser,
+            pass: gmailAppPassword.replace(/\s+/g, ""), // strip spaces
+          },
+        });
 
-          <div style="
-            font-size: 32px;
-            font-weight: bold;
-            letter-spacing: 10px;
-            padding: 20px;
-            background: #f1f5f9;
-            border-radius: 8px;
-            text-align: center;
-          ">
-            ${otp}
-          </div>
+        await transporter.sendMail({
+          from: `"Apex Quantum" <${gmailUser}>`,
+          to: normalizedEmail,
+          subject: "Your Apex Quantum Login OTP",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background-color: #0b0f19; color: #ffffff;">
+              <h2 style="color: #0284c7; text-align: center; font-size: 24px;">Apex Quantum</h2>
+              <p style="color: #cbd5e1; font-size: 14px;">Your login verification code is:</p>
+              <div style="font-size: 36px; font-weight: bold; letter-spacing: 12px; padding: 20px; background-color: #1e293b; border-radius: 10px; text-align: center; color: #38bdf8; margin: 20px 0;">
+                ${otp}
+              </div>
+              <p style="color: #94a3b8; font-size: 13px;">This OTP will expire in 5 minutes.</p>
+              <hr style="border: 0; border-top: 1px solid #334155; margin: 20px 0;" />
+              <p style="font-size: 11px; color: #64748b; text-align: center;">Apex Quantum Institutional Trading Platform</p>
+            </div>
+          `,
+        });
 
-          <p>
-            This OTP will expire in 5 minutes.
-          </p>
+        console.log(`✅ [Gmail SMTP] OTP email sent successfully to ${normalizedEmail}`);
 
-          <p>
-            If you did not attempt to log in,
-            you can safely ignore this email.
-          </p>
-
-          <hr />
-
-          <p style="font-size: 12px; color: #64748b;">
-            Apex Quantum Paper Trading Platform
-          </p>
-        </div>
-      `,
-    });
-
-    // IMPORTANT:
-    // Resend returns API errors in the `error` property.
-    if (error) {
-      console.warn("Resend API notice (Testing Domain Restriction):", error.message);
-
-      // If Resend is in testing mode (only allows sending to account owner email),
-      // we still allow testing any email by logging the OTP to server console.
-      return NextResponse.json({
-        success: true,
-        message: `OTP generated. (Resend test mode: Check terminal console for OTP code).`,
-        devNotice: error.message,
-      });
+        return NextResponse.json({
+          success: true,
+          message: "OTP sent to your email via Gmail.",
+          provider: "gmail",
+        });
+      } catch (gmailErr: any) {
+        console.error("❌ Gmail SMTP error:", gmailErr);
+      }
     }
 
-    console.log("OTP email sent successfully:", data);
+    // ============================================================
+    // OPTION 2: RESEND API (Fallback if RESEND_API_KEY is configured)
+    // ============================================================
+    if (process.env.RESEND_API_KEY) {
+      try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
 
+        const { data, error } = await resend.emails.send({
+          from: process.env.OTP_FROM_EMAIL || "Apex Quantum <onboarding@resend.dev>",
+          to: [normalizedEmail],
+          subject: "Your Apex Quantum Login OTP",
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #0b0f19; color: #ffffff;">
+              <h2 style="color: #0284c7;">Apex Quantum</h2>
+              <p>Your login verification code is:</p>
+              <div style="font-size: 32px; font-weight: bold; letter-spacing: 10px; padding: 20px; background: #1e293b; border-radius: 8px; text-align: center; color: #38bdf8;">
+                ${otp}
+              </div>
+              <p>This OTP will expire in 5 minutes.</p>
+            </div>
+          `,
+        });
+
+        if (!error && data) {
+          console.log(`✅ [Resend] OTP email sent successfully to ${normalizedEmail}`);
+          return NextResponse.json({
+            success: true,
+            message: "OTP sent to your email via Resend.",
+            emailId: data.id,
+            provider: "resend",
+          });
+        }
+      } catch (resendErr) {
+        console.warn("Resend API fallback notice:", resendErr);
+      }
+    }
+
+    // ============================================================
+    // OPTION 3: DEV LOG (Always succeeds so local testing never blocks)
+    // ============================================================
     return NextResponse.json({
       success: true,
-      message: "OTP sent successfully.",
-      emailId: data?.id,
+      message: "OTP generated. (Check terminal console or add GMAIL_APP_PASSWORD).",
+      provider: "dev_log",
     });
   } catch (error) {
-    console.error("OTP sending error:", error);
+    console.error("OTP route error:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message: "Failed to send OTP.",
+        message: "Failed to process OTP request.",
       },
       { status: 500 }
     );
