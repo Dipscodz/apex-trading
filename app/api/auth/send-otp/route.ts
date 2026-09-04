@@ -29,15 +29,17 @@ export async function POST(request: Request) {
     if (gmailUser && gmailAppPassword) {
       try {
         const transporter = nodemailer.createTransport({
-          service: "gmail",
+          host: "smtp.gmail.com",
+          port: 465,
+          secure: true,
           auth: {
-            user: gmailUser,
-            pass: gmailAppPassword.replace(/\s+/g, ""), // strip spaces
+            user: gmailUser.trim(),
+            pass: gmailAppPassword.replace(/\s+/g, ""), // strip any spaces
           },
         });
 
         await transporter.sendMail({
-          from: `"Apex Quantum" <${gmailUser}>`,
+          from: `"Apex Quantum" <${gmailUser.trim()}>`,
           to: normalizedEmail,
           subject: "Your Apex Quantum Login OTP",
           html: `
@@ -63,6 +65,16 @@ export async function POST(request: Request) {
         });
       } catch (gmailErr: any) {
         console.error("❌ Gmail SMTP error:", gmailErr);
+        // Fallback or return error details if Gmail authentication failed
+        if (!process.env.RESEND_API_KEY) {
+          return NextResponse.json(
+            {
+              success: false,
+              message: `Gmail SMTP Error: ${gmailErr.message || "Invalid Gmail App Password"}`,
+            },
+            { status: 500 }
+          );
+        }
       }
     }
 
