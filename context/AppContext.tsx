@@ -7,7 +7,9 @@ import {
   TradePosition,
   UserPriceOverride,
   TransactionRecord,
-  AdminAuditLog
+  AdminAuditLog,
+  PortfolioSimulationEvent,
+  PerformanceDataPoint
 } from '@/types';
 import { INITIAL_CRYPTO_DATA, fetchLiveCryptoMarkets } from '@/lib/cryptoService';
 
@@ -43,9 +45,20 @@ interface AppContextType {
   allocateProfitLoss: (targetUserId: string, amount: number, details: string) => void;
   setUserProfitMultiplier: (targetUserId: string, multiplier: number) => void;
   toggleUserStatus: (targetUserId: string, status: 'active' | 'frozen' | 'suspended') => void;
-  approveTransaction: (transactionId: string) => void;
-  rejectTransaction: (transactionId: string) => void;
-  
+  approveTransaction: (txId: string) => void;
+  rejectTransaction: (txId: string) => void;
+
+  // Admin Simulation Engine
+  simulationEvents: PortfolioSimulationEvent[];
+  performanceDataPoints: PerformanceDataPoint[];
+  generatePortfolioSimulation: (
+    targetUserId: string,
+    simulationType: 'profit' | 'loss',
+    targetAmount: number,
+    marginPct: number,
+    isExact: boolean
+  ) => { success: boolean; message: string; generatedAmount: number };
+
   // System Utility
   resetToDefaultData: () => void;
 }
@@ -155,6 +168,13 @@ const DEFAULT_TRANSACTIONS: TransactionRecord[] = [
   }
 ];
 
+const DEFAULT_PERFORMANCE_POINTS: PerformanceDataPoint[] = [
+  { id: 'perf_01', userId: 'usr_sreerag_01', timestamp: 'Sep 01', eventPnl: 850, portfolioValue: 98850 },
+  { id: 'perf_02', userId: 'usr_sreerag_01', timestamp: 'Sep 02', eventPnl: -420, portfolioValue: 98430 },
+  { id: 'perf_03', userId: 'usr_sreerag_01', timestamp: 'Sep 03', eventPnl: 1047, portfolioValue: 99477 },
+  { id: 'perf_04', userId: 'usr_sreerag_01', timestamp: 'Sep 04', eventPnl: 620, portfolioValue: 100097 }
+];
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const LOCAL_STORAGE_KEY = 'apex_quantum_app_state_v2';
@@ -167,6 +187,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [adminOverrides, setAdminOverrides] = useState<UserPriceOverride[]>([]);
   const [transactions, setTransactions] = useState<TransactionRecord[]>(DEFAULT_TRANSACTIONS);
   const [auditLogs, setAuditLogs] = useState<AdminAuditLog[]>([]);
+  const [simulationEvents, setSimulationEvents] = useState<PortfolioSimulationEvent[]>([]);
+  const [performanceDataPoints, setPerformanceDataPoints] = useState<PerformanceDataPoint[]>(DEFAULT_PERFORMANCE_POINTS);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Load state from localStorage on mount
@@ -651,6 +673,89 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
+  const generatePortfolioSimulation = (
+    targetUserId: string,
+    simulationType: 'profit' | 'loss',
+    targetAmount: number,
+    marginPct: number,
+    isExact: boolean
+  ) => {
+    const targetUser = users.find((u) => u.id === targetUserId);
+    if (!targetUser) {
+      return { success: false, message: 'Target user not found.', generatedAmount: 0 };
+    }
+
+    const absTarget = Math.abs(targetAmount);
+    let generated = absTarget;
+
+    if (!isExact) {
+      const margin = marginPct / 100; // e.g. 10% -> 0.10
+      const lower = absTarget * (1 - margin);
+      const upper = absTarget * (1 + margin);
+
+      // Server-side random number generator between lower and upper
+      const randomValue = lower + Math.random() * (upper - lower);
+      generated = Math.round(randomValue * 100) / 100;
+    }
+
+    // Ensure sign remains strictly correct
+    const finalAmount = simulationType === 'profit' ? Math.abs(generated) : -Math.abs(generated);
+
+    // Update user balance
+    const newBalance = Math.max(0, targetUser.balance + finalAmount);
+    updateUserBalance(
+      targetUserId,
+      newBalance,
+      `Portfolio Simulation (${simulationType.toUpperCase()}: ${finalAmount >= 0 ? '+' : ''}₹${finalAmount.toLocaleString('en-IN')})`
+    );
+
+    // Log Simulation Event
+    const newSimEvent: PortfolioSimulationEvent = {
+      id: `sim_${Date.now()}`,
+      userId: targetUser.id,
+      userName: targetUser.name,
+      adminId: currentUser?.id || 'usr_admin_01',
+      targetAmount,
+      simulationMargin: marginPct,
+      generatedAmount: finalAmount,
+      simulationType,
+      executionMode: isExact ? 'exact' : 'randomized',
+      newPortfolioValuation: newBalance,
+      createdAt: new Date().toISOString(),
+    };
+
+    setSimulationEvents((prev) => [newSimEvent, ...prev]);
+
+    // Append Performance Data Point for history graph
+    const newPerfPoint: PerformanceDataPoint = {
+      id: `perf_${Date.now()}`,
+      userId: targetUser.id,
+      timestamp: new Date().toLocaleDateString('en-IN', { month: 'short', day: '2-digit' }),
+      eventPnl: finalAmount,
+      portfolioValue: newBalance,
+    };
+
+    setPerformanceDataPoints((prev) => [...prev, newPerfPoint]);
+
+    // Record Audit Log
+    const newAudit: AdminAuditLog = {
+      id: `log_${Date.now()}`,
+      adminId: currentUser?.id || 'usr_admin_01',
+      targetUserId: targetUser.id,
+      targetUserName: targetUser.name,
+      action: 'Portfolio Simulation Event',
+      details: `Generated ${simulationType.toUpperCase()} of ${finalAmount >= 0 ? '+' : ''}₹${finalAmount.toLocaleString('en-IN')} (${isExact ? 'Exact' : `±${marginPct}% Margin`}). New Balance: ₹${newBalance.toLocaleString('en-IN')}`,
+      timestamp: new Date().toISOString(),
+    };
+    setAuditLogs((prev) => [newAudit, ...prev]);
+
+    return {
+      success: true,
+      message: `Simulated P&L Generated: ${finalAmount >= 0 ? '+' : ''}₹${finalAmount.toLocaleString('en-IN')} (Target: ₹${targetAmount.toLocaleString('en-IN')}, ${isExact ? 'Exact' : `±${marginPct}% Margin`})`,
+      generatedAmount: finalAmount,
+    };
+  };
+
   const resetToDefaultData = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     setUsers(DEFAULT_USERS);
@@ -659,6 +764,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAdminOverrides([]);
     setTransactions(DEFAULT_TRANSACTIONS);
     setAuditLogs([]);
+    setSimulationEvents([]);
+    setPerformanceDataPoints(DEFAULT_PERFORMANCE_POINTS);
   };
 
   return (
@@ -688,6 +795,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         toggleUserStatus,
         approveTransaction,
         rejectTransaction,
+        simulationEvents,
+        performanceDataPoints,
+        generatePortfolioSimulation,
         resetToDefaultData,
       }}
     >

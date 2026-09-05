@@ -96,6 +96,7 @@ export interface AdminAuditLog {
 
 export type AdminTab =
   | 'dashboard'
+  | 'simulation'
   | 'users'
   | 'analytics'
   | 'revenue'
@@ -113,6 +114,29 @@ export interface NetProfitMetrics {
   percentageChange: number;
   period: ComparisonPeriod;
 }
+
+export interface PortfolioSimulationEvent {
+  id: string;
+  userId: string;
+  userName: string;
+  adminId: string;
+  targetAmount: number;
+  simulationMargin: number; // e.g. 0.10 for 10%
+  generatedAmount: number; // Final randomized or exact amount
+  simulationType: 'profit' | 'loss';
+  executionMode: 'exact' | 'randomized';
+  newPortfolioValuation: number;
+  createdAt: string;
+}
+
+export interface PerformanceDataPoint {
+  id: string;
+  userId: string;
+  timestamp: string;
+  eventPnl: number;
+  portfolioValue: number;
+}
+
 
 
 

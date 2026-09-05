@@ -31,7 +31,8 @@ import {
   ShieldCheck,
   Calendar,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Zap
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -64,7 +65,9 @@ export const AdminConsole: React.FC = () => {
     rejectTransaction,
     auditLogs,
     positions,
-    markets
+    markets,
+    simulationEvents,
+    generatePortfolioSimulation
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
@@ -72,6 +75,14 @@ export const AdminConsole: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [userStatusFilter, setUserStatusFilter] = useState<'all' | 'active' | 'frozen' | 'suspended'>('all');
   const [netProfitPeriod, setNetProfitPeriod] = useState<ComparisonPeriod>('monthly');
+
+  // Simulation Control Panel States
+  const [simTargetUserId, setSimTargetUserId] = useState<string>(users[1]?.id || users[0]?.id || '');
+  const [simType, setSimType] = useState<'profit' | 'loss'>('profit');
+  const [simTargetAmount, setSimTargetAmount] = useState<string>('1000');
+  const [simMarginPct, setSimMarginPct] = useState<number>(10); // default ±10%
+  const [simExecutionMode, setSimExecutionMode] = useState<'randomized' | 'exact'>('randomized');
+  const [simSuccessMsg, setSimSuccessMsg] = useState<string>('');
 
   // Modal states for Admin actions
   const [editBalanceModal, setEditBalanceModal] = useState(false);
@@ -202,6 +213,7 @@ export const AdminConsole: React.FC = () => {
         <nav className="space-y-1 text-xs font-semibold">
           {[
             { id: 'dashboard', label: 'Executive Dashboard', icon: BarChart3 },
+            { id: 'simulation', label: 'Portfolio Simulation', icon: Sliders },
             { id: 'users', label: 'User Directory', icon: Users },
             { id: 'analytics', label: 'Trading Analytics', icon: TrendingUp },
             { id: 'revenue', label: 'Revenue & PnL', icon: DollarSign },
@@ -394,6 +406,292 @@ export const AdminConsole: React.FC = () => {
                     <span className="w-2.5 h-2.5 rounded-full bg-rose-400"></span> Losing Trades
                   </span>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: PORTFOLIO SIMULATION CONTROL PANEL */}
+        {activeTab === 'simulation' && (
+          <div className="space-y-6">
+            
+            {/* Simulation Control Panel Box */}
+            <div className="glass-panel p-6 rounded-3xl border border-slate-800 space-y-6 shadow-2xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div>
+                  <h3 className="font-extrabold text-white text-lg flex items-center gap-2">
+                    <Sliders className="w-5 h-5 text-amber-400" />
+                    <span>Portfolio Simulation Control Panel</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Generate randomized or exact simulated P&L events with configurable simulation margins (±10% default)
+                  </p>
+                </div>
+
+                <div className="px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold font-mono">
+                  Controlled Trading Simulation
+                </div>
+              </div>
+
+              {simSuccessMsg && (
+                <div className="p-4 text-xs rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-extrabold flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <span>{simSuccessMsg}</span>
+                </div>
+              )}
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const targetAmt = parseFloat(simTargetAmount);
+                  if (isNaN(targetAmt) || targetAmt <= 0) return;
+
+                  const res = generatePortfolioSimulation(
+                    simTargetUserId,
+                    simType,
+                    targetAmt,
+                    simMarginPct,
+                    simExecutionMode === 'exact'
+                  );
+
+                  if (res.success) {
+                    setSimSuccessMsg(res.message);
+                    setTimeout(() => setSimSuccessMsg(''), 5000);
+                  }
+                }}
+                className="space-y-6"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  
+                  {/* Select User */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-2">Select Target Client User</label>
+                    <select
+                      value={simTargetUserId}
+                      onChange={(e) => setSimTargetUserId(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white font-semibold focus:outline-none"
+                    >
+                      {users.map((u) => (
+                        <option key={u.id} value={u.id}>
+                          {u.name} ({u.email}) - Current Equity: ₹{u.balance.toLocaleString('en-IN')}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Simulation Type (Profit vs Loss) */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-2">Simulation Type</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setSimType('profit')}
+                        className={`py-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 border transition-all ${
+                          simType === 'profit'
+                            ? 'bg-emerald-600/90 text-white border-emerald-400 shadow-lg shadow-emerald-950/40'
+                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <TrendingUp className="w-4 h-4 text-emerald-300" />
+                        <span>Profit (+)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setSimType('loss')}
+                        className={`py-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 border transition-all ${
+                          simType === 'loss'
+                            ? 'bg-rose-600/90 text-white border-rose-400 shadow-lg shadow-rose-950/40'
+                            : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        <TrendingDown className="w-4 h-4 text-rose-300" />
+                        <span>Loss (-)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Target Amount */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-2">Target P&L Amount (INR ₹)</label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-3 text-sm font-bold text-slate-500">₹</span>
+                      <input
+                        type="number"
+                        min="1"
+                        required
+                        value={simTargetAmount}
+                        onChange={(e) => setSimTargetAmount(e.target.value)}
+                        placeholder="1000"
+                        className="w-full pl-9 pr-4 py-2.5 text-sm rounded-xl glass-input focus:outline-none font-mono font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Simulation Margin Picker */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-semibold text-slate-300">Simulation Margin (Range)</label>
+                      <span className="text-xs font-bold text-sky-400 font-mono">±{simMarginPct}%</span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1.5 text-xs font-bold">
+                      {[5, 10, 15, 20].map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setSimMarginPct(m)}
+                          className={`py-2 rounded-xl border transition-all ${
+                            simMarginPct === m
+                              ? 'bg-sky-600 text-white border-sky-400 shadow-md'
+                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          ±{m}% {m === 10 ? '(Default)' : ''}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Execution Mode Selector (Exact vs Randomized) */}
+                <div className="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 space-y-3">
+                  <span className="text-xs font-semibold text-slate-300 block">Execution Mode & Randomness</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label
+                      onClick={() => setSimExecutionMode('randomized')}
+                      className={`p-3 rounded-xl border cursor-pointer flex items-center gap-3 transition-all ${
+                        simExecutionMode === 'randomized'
+                          ? 'bg-sky-950/50 border-sky-500/60 text-white'
+                          : 'bg-slate-900/60 border-slate-800 text-slate-400'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="execMode"
+                        checked={simExecutionMode === 'randomized'}
+                        onChange={() => setSimExecutionMode('randomized')}
+                        className="text-sky-500"
+                      />
+                      <div>
+                        <span className="font-bold text-xs block text-white">Randomized Simulation (±{simMarginPct}%)</span>
+                        <span className="text-[11px] text-slate-400">Server-side randomized result within configured margin bounds</span>
+                      </div>
+                    </label>
+
+                    <label
+                      onClick={() => setSimExecutionMode('exact')}
+                      className={`p-3 rounded-xl border cursor-pointer flex items-center gap-3 transition-all ${
+                        simExecutionMode === 'exact'
+                          ? 'bg-sky-950/50 border-sky-500/60 text-white'
+                          : 'bg-slate-900/60 border-slate-800 text-slate-400'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="execMode"
+                        checked={simExecutionMode === 'exact'}
+                        onChange={() => setSimExecutionMode('exact')}
+                        className="text-sky-500"
+                      />
+                      <div>
+                        <span className="font-bold text-xs block text-white">Exact Amount</span>
+                        <span className="text-[11px] text-slate-400">Applies target amount directly without randomization</span>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Calculated Preview Box */}
+                  {(() => {
+                    const amt = parseFloat(simTargetAmount) || 0;
+                    const margin = simMarginPct / 100;
+                    let minB = 0;
+                    let maxB = 0;
+                    if (simType === 'profit') {
+                      minB = amt * (1 - margin);
+                      maxB = amt * (1 + margin);
+                    } else {
+                      minB = -(amt * (1 + margin));
+                      maxB = -(amt * (1 - margin));
+                    }
+                    return (
+                      <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between text-xs font-mono text-slate-300">
+                        <span>Preview Range:</span>
+                        {simExecutionMode === 'exact' ? (
+                          <span className="font-bold text-emerald-400">
+                            Exact P&L: {simType === 'profit' ? '+' : '-'}₹{amt.toLocaleString('en-IN')}
+                          </span>
+                        ) : (
+                          <span className="font-bold text-sky-400">
+                            Simulated Range: {simType === 'profit' ? '+' : ''}₹{minB.toLocaleString('en-IN')} to {simType === 'profit' ? '+' : ''}₹{maxB.toLocaleString('en-IN')}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 rounded-xl font-extrabold text-sm text-white bg-amber-600 hover:bg-amber-500 shadow-xl shadow-amber-950/40 transition-all flex items-center justify-center gap-2"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span>Generate Simulation Event</span>
+                </button>
+              </form>
+            </div>
+
+            {/* Generated Simulation Events History Table */}
+            <div className="glass-panel p-5 rounded-3xl border border-slate-800 space-y-4">
+              <h4 className="font-extrabold text-white text-base flex items-center gap-2 border-b border-slate-800 pb-3">
+                <Clock className="w-5 h-5 text-sky-400" />
+                <span>Simulation Event Audit Log</span>
+              </h4>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-slate-900/90 border-b border-slate-800 text-slate-400 uppercase font-semibold text-[11px]">
+                    <tr>
+                      <th className="py-3 px-4">Timestamp</th>
+                      <th className="py-3 px-4">Client User</th>
+                      <th className="py-3 px-4">Type</th>
+                      <th className="py-3 px-4">Target Amount</th>
+                      <th className="py-3 px-4">Margin</th>
+                      <th className="py-3 px-4">Generated Result</th>
+                      <th className="py-3 px-4">Execution Mode</th>
+                      <th className="py-3 px-4">Resulting Portfolio</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60">
+                    {simulationEvents.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="py-8 text-center text-slate-500 font-sans">
+                          No simulation events generated yet. Use the control panel above to generate simulated events.
+                        </td>
+                      </tr>
+                    ) : (
+                      simulationEvents.map((sim) => (
+                        <tr key={sim.id} className="hover:bg-slate-800/40 transition-colors">
+                          <td className="py-3.5 px-4 text-slate-400">{new Date(sim.createdAt).toLocaleString()}</td>
+                          <td className="py-3.5 px-4 font-sans font-bold text-white">{sim.userName}</td>
+                          <td className="py-3.5 px-4 uppercase font-bold">
+                            <span className={sim.simulationType === 'profit' ? 'text-emerald-400' : 'text-rose-400'}>
+                              {sim.simulationType}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 font-bold text-white">₹{sim.targetAmount.toLocaleString('en-IN')}</td>
+                          <td className="py-3.5 px-4 text-sky-400 font-bold">±{sim.simulationMargin}%</td>
+                          <td className="py-3.5 px-4 font-bold text-sm">
+                            <span className={sim.generatedAmount >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
+                              {sim.generatedAmount >= 0 ? '+' : ''}₹{sim.generatedAmount.toLocaleString('en-IN')}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 capitalize text-slate-300 font-sans">{sim.executionMode}</td>
+                          <td className="py-3.5 px-4 font-bold text-white">₹{sim.newPortfolioValuation.toLocaleString('en-IN')}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

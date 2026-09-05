@@ -3,6 +3,15 @@
 import React, { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid
+} from 'recharts';
+import {
   Wallet,
   TrendingUp,
   TrendingDown,
@@ -26,7 +35,9 @@ export const UserPortfolio: React.FC = () => {
     closePosition,
     requestDeposit,
     requestWithdrawal,
-    transactions
+    transactions,
+    simulationEvents,
+    performanceDataPoints
   } = useApp();
 
   const [depositAmount, setDepositAmount] = useState('');
@@ -51,6 +62,8 @@ export const UserPortfolio: React.FC = () => {
   const userPositions = positions.filter((p) => p.userId === currentUser.id);
   const openPositions = userPositions.filter((p) => p.status === 'open');
   const userTxHistory = transactions.filter((t) => t.userId === currentUser.id);
+  const userPerfPoints = performanceDataPoints.filter((p) => p.userId === currentUser.id);
+  const userSimEvents = simulationEvents.filter((s) => s.userId === currentUser.id);
 
   const totalOpenValuation = openPositions.reduce((acc, p) => acc + p.currentValuation, 0);
   const totalOpenPnl = openPositions.reduce((acc, p) => acc + p.pnl, 0);
@@ -89,6 +102,19 @@ export const UserPortfolio: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      
+      {/* Educational Paper Trading Disclaimer Banner */}
+      <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 rounded-2xl p-4 flex items-start gap-3 text-amber-200 text-xs">
+        <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="space-y-1">
+          <span className="font-bold text-amber-300 uppercase tracking-wide block">
+            Educational Paper Trading Platform Disclaimer
+          </span>
+          <p className="text-slate-300 text-[11px] leading-relaxed">
+            Notice: All portfolio balances, profits, losses, market prices, asset holdings, and transactions displayed on this platform are simulated for paper trading and educational learning purposes only. They hold no real monetary value, financial claim, or legal entitlement.
+          </p>
+        </div>
+      </div>
       
       {/* Portfolio Top Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -147,6 +173,133 @@ export const UserPortfolio: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Portfolio Performance Trajectory Chart */}
+      <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-emerald-400" />
+              <h3 className="font-extrabold text-white text-base">Simulated Performance Trajectory</h3>
+            </div>
+            <p className="text-slate-400 text-xs mt-0.5">
+              Historical valuation trajectory based on admin portfolio simulation events & trades
+            </p>
+          </div>
+          <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-500/20 self-start sm:self-auto">
+            Live Equity: ₹{(netEquity * 10).toLocaleString('en-IN')} (${netEquity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+          </span>
+        </div>
+
+        {userPerfPoints.length > 0 ? (
+          <div className="h-64 w-full pt-2">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={userPerfPoints} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="userValGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+                <XAxis dataKey="timestamp" stroke="#64748b" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis
+                  stroke="#64748b"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#0f172a',
+                    borderColor: '#334155',
+                    borderRadius: '0.75rem',
+                    color: '#fff',
+                    fontSize: '12px'
+                  }}
+                  formatter={(val: any) => [`$${Number(val).toLocaleString()}`, 'Valuation']}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="portfolioValue"
+                  stroke="#10b981"
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#userValGrad)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="py-8 text-center text-slate-500 text-xs">
+            No historical performance points recorded yet.
+          </div>
+        )}
+      </div>
+
+      {/* Admin Simulation Event History Table (If any exist for user) */}
+      {userSimEvents.length > 0 && (
+        <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+          <div className="p-4 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <History className="w-5 h-5 text-amber-400" />
+              <h3 className="font-extrabold text-white text-sm">Simulated Portfolio P&L Allocation History</h3>
+            </div>
+            <span className="text-[11px] text-amber-400 font-mono font-semibold">
+              {userSimEvents.length} Simulation Events
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono">
+              <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 uppercase font-semibold text-[11px]">
+                <tr>
+                  <th className="py-3 px-4">Date / Time</th>
+                  <th className="py-3 px-4">Type</th>
+                  <th className="py-3 px-4">Execution Mode</th>
+                  <th className="py-3 px-4">Target Amount</th>
+                  <th className="py-3 px-4">Simulated Result</th>
+                  <th className="py-3 px-4 text-right">Resulting Balance</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60">
+                {userSimEvents.map((sim) => {
+                  const isGain = sim.generatedAmount >= 0;
+                  return (
+                    <tr key={sim.id} className="hover:bg-slate-800/20 transition-colors">
+                      <td className="py-3 px-4 text-slate-400 font-sans text-[11px]">
+                        {new Date(sim.createdAt).toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase ${
+                            isGain ? 'bg-emerald-500/20 text-emerald-300' : 'bg-rose-500/20 text-rose-300'
+                          }`}
+                        >
+                          {sim.simulationType}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-slate-300 font-sans capitalize">
+                        {sim.executionMode === 'exact' ? 'Exact Allocation' : `Randomized (±${sim.simulationMargin}%)`}
+                      </td>
+                      <td className="py-3 px-4 text-slate-300">
+                        ₹{sim.targetAmount.toLocaleString('en-IN')}
+                      </td>
+                      <td className={`py-3 px-4 font-bold ${isGain ? 'text-emerald-400' : 'text-rose-400'}`}>
+                        {isGain ? '+' : ''}₹{sim.generatedAmount.toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-3 px-4 text-right font-bold text-white">
+                        ₹{(sim.newPortfolioValuation * 10).toLocaleString('en-IN')} (${sim.newPortfolioValuation.toLocaleString()})
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Active Positions Table */}
       <div className="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
