@@ -126,7 +126,7 @@ export const UserPortfolio: React.FC = () => {
             <Wallet className="w-4 h-4 text-sky-400" />
           </div>
           <div className="text-3xl font-extrabold text-white font-mono flex items-baseline gap-2">
-            <span>${netEquity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            <span>₹{netEquity.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             {currentUser.email === 'sreeragmsm@gmail.com' && (
               <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
                 ₹10,00,000 (1 Lakh INR Capital)
@@ -134,7 +134,7 @@ export const UserPortfolio: React.FC = () => {
             )}
           </div>
           <div className="text-[11px] text-slate-400 font-medium">
-            Cash Balance: <span className="text-slate-200 font-bold font-mono">${currentUser.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            Cash Balance: <span className="text-slate-200 font-bold font-mono">₹{currentUser.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
           </div>
         </div>
 
@@ -145,7 +145,7 @@ export const UserPortfolio: React.FC = () => {
             {isPnlPositive ? <TrendingUp className="w-4 h-4 text-emerald-400" /> : <TrendingDown className="w-4 h-4 text-rose-400" />}
           </div>
           <div className={`text-3xl font-extrabold font-mono ${isPnlPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
-            {isPnlPositive ? '+' : ''}${totalOpenPnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {isPnlPositive ? '+' : ''}₹{totalOpenPnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
           <div className="text-[11px] text-slate-400 font-medium">
             Active Open Trades: <span className="text-slate-200 font-bold">{openPositions.length}</span>
@@ -187,7 +187,7 @@ export const UserPortfolio: React.FC = () => {
             </p>
           </div>
           <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-500/20 self-start sm:self-auto">
-            Live Equity: ₹{(netEquity * 10).toLocaleString('en-IN')} (${netEquity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})
+            Live Equity: ₹{netEquity.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>
 
@@ -208,7 +208,7 @@ export const UserPortfolio: React.FC = () => {
                   fontSize={11}
                   tickLine={false}
                   axisLine={false}
-                  tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
+                  tickFormatter={(val) => `₹${(val / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
                   contentStyle={{
@@ -218,7 +218,7 @@ export const UserPortfolio: React.FC = () => {
                     color: '#fff',
                     fontSize: '12px'
                   }}
-                  formatter={(val: any) => [`$${Number(val).toLocaleString()}`, 'Valuation']}
+                  formatter={(val: any) => [`₹${Number(val).toLocaleString('en-IN')}`, 'Valuation']}
                 />
                 <Area
                   type="monotone"
@@ -290,7 +290,7 @@ export const UserPortfolio: React.FC = () => {
                         {isGain ? '+' : ''}₹{sim.generatedAmount.toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-4 text-right font-bold text-white">
-                        ₹{(sim.newPortfolioValuation * 10).toLocaleString('en-IN')} (${sim.newPortfolioValuation.toLocaleString()})
+                        ₹{sim.newPortfolioValuation.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </td>
                     </tr>
                   );
@@ -359,20 +359,20 @@ export const UserPortfolio: React.FC = () => {
                       </td>
 
                       <td className="py-3.5 px-4 text-slate-300">
-                        ${pos.entryPrice.toLocaleString(undefined, { minimumFractionDigits: pos.entryPrice < 1 ? 4 : 2 })}
+                        ₹{pos.entryPrice.toLocaleString('en-IN', { minimumFractionDigits: pos.entryPrice < 1 ? 4 : 2 })}
                       </td>
 
                       <td className="py-3.5 px-4 font-bold text-white">
-                        ${pos.currentPrice.toLocaleString(undefined, { minimumFractionDigits: pos.currentPrice < 1 ? 4 : 2 })}
+                        ₹{pos.currentPrice.toLocaleString('en-IN', { minimumFractionDigits: pos.currentPrice < 1 ? 4 : 2 })}
                       </td>
 
                       <td className="py-3.5 px-4 text-slate-300">
-                        ${pos.totalInvested.toLocaleString()}
+                        ₹{pos.totalInvested.toLocaleString('en-IN')}
                       </td>
 
                       <td className="py-3.5 px-4 font-bold">
                         <div className={`flex items-center gap-1 ${isPosPnlGood ? 'text-emerald-400' : 'text-rose-400'}`}>
-                          <span>{isPosPnlGood ? '+' : ''}${pos.pnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          <span>{isPosPnlGood ? '+' : ''}₹{pos.pnl.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                           <span className="text-[10px] font-sans">({isPosPnlGood ? '+' : ''}{pos.pnlPercentage}%)</span>
                         </div>
                       </td>
@@ -425,7 +425,7 @@ export const UserPortfolio: React.FC = () => {
                   </td>
                   <td className="py-3 px-4 text-slate-300 font-sans">{tx.details}</td>
                   <td className="py-3 px-4 font-bold text-white">
-                    ${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ₹{tx.amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td className="py-3 px-4 text-right font-sans">
                     <span
@@ -470,7 +470,7 @@ export const UserPortfolio: React.FC = () => {
 
             <form onSubmit={handleDepositSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Deposit Amount (USD)</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Deposit Amount (INR)</label>
                 <input
                   type="number"
                   required
@@ -490,7 +490,7 @@ export const UserPortfolio: React.FC = () => {
                     onClick={() => setDepositAmount(val.toString())}
                     className="py-1 rounded-lg bg-slate-800 text-xs font-semibold text-sky-300 hover:bg-slate-700"
                   >
-                    +${val.toLocaleString()}
+                    +₹{val.toLocaleString('en-IN')}
                   </button>
                 ))}
               </div>
@@ -529,7 +529,7 @@ export const UserPortfolio: React.FC = () => {
 
             <form onSubmit={handleWithdrawSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Withdrawal Amount (USD)</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">Withdrawal Amount (INR)</label>
                 <input
                   type="number"
                   required
@@ -541,7 +541,7 @@ export const UserPortfolio: React.FC = () => {
                   className="w-full p-2.5 text-sm rounded-xl glass-input font-mono font-bold focus:outline-none"
                 />
                 <span className="text-[11px] text-slate-400 block mt-1">
-                  Max Available: ${currentUser.balance.toLocaleString()}
+                  Max Available: ₹{currentUser.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
 
