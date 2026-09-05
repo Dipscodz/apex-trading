@@ -99,8 +99,13 @@ export const UserPortfolio: React.FC = () => {
             <span>Total Net Portfolio Valuation</span>
             <Wallet className="w-4 h-4 text-sky-400" />
           </div>
-          <div className="text-3xl font-extrabold text-white font-mono">
-            ${netEquity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <div className="text-3xl font-extrabold text-white font-mono flex items-baseline gap-2">
+            <span>${netEquity.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            {currentUser.email === 'sreeragmsm@gmail.com' && (
+              <span className="text-xs font-semibold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30">
+                ₹10,00,000 (1 Lakh INR Capital)
+              </span>
+            )}
           </div>
           <div className="text-[11px] text-slate-400 font-medium">
             Cash Balance: <span className="text-slate-200 font-bold font-mono">${currentUser.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>

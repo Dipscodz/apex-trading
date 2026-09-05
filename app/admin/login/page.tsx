@@ -9,7 +9,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { login, currentUser } = useApp();
 
-  const [email, setEmail] = useState('admin@apexquantum.io');
+  const [email, setEmail] = useState('derindenny65@gmail.com');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -45,7 +45,7 @@ export default function AdminLoginPage() {
   };
 
   const handleQuickFill = () => {
-    setEmail('admin@apexquantum.io');
+    setEmail('derindenny65@gmail.com');
     setPassword('AdminApex2026!');
   };
 

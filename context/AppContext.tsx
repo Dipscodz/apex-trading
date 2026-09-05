@@ -53,29 +53,29 @@ interface AppContextType {
 const DEFAULT_USERS: User[] = [
   {
     id: 'usr_admin_01',
-    name: 'Chief Admin',
-    email: 'admin@apexquantum.io',
+    name: 'Derin Denny',
+    email: 'derindenny65@gmail.com',
     password: 'AdminApex2026!',
     role: 'admin',
     balance: 150000.00,
     profitMultiplier: 1.0,
     status: 'active',
     createdAt: '2026-01-10T10:00:00Z',
-    lastLogin: '2026-09-01T20:00:00Z',
-    notes: 'System administrator account',
+    lastLogin: '2026-09-05T20:00:00Z',
+    notes: 'Chief Executive Administrator',
   },
   {
-    id: 'usr_trader_01',
-    name: 'Institutional Client',
-    email: 'trader@apexquantum.io',
-    password: 'trader123',
+    id: 'usr_sreerag_01',
+    name: 'Sreerag MS',
+    email: 'sreeragmsm@gmail.com',
+    password: 'sreerag123',
     role: 'user',
-    balance: 35000.00,
-    profitMultiplier: 1.2,
+    balance: 100000.00, // ₹1,000,000 / 1 Lakh Capital
+    profitMultiplier: 1.0,
     status: 'active',
     createdAt: '2026-02-15T14:30:00Z',
-    lastLogin: '2026-09-01T19:45:00Z',
-    notes: 'Premium investor tier',
+    lastLogin: '2026-09-05T19:45:00Z',
+    notes: '1 Lakh Capital Premium Portfolio Account',
   },
   {
     id: 'usr_trader_02',
@@ -95,34 +95,34 @@ const DEFAULT_USERS: User[] = [
 const DEFAULT_POSITIONS: TradePosition[] = [
   {
     id: 'pos_01',
-    userId: 'usr_trader_01',
+    userId: 'usr_sreerag_01',
     symbol: 'BTC',
     coinName: 'Bitcoin',
     type: 'buy',
     entryPrice: 62500.00,
     currentPrice: 64280.50,
-    amount: 0.25,
-    totalInvested: 15625.00,
-    currentValuation: 16070.12,
+    amount: 0.5,
+    totalInvested: 31250.00,
+    currentValuation: 32140.25,
     leverage: 1,
-    pnl: 445.12,
+    pnl: 890.25,
     pnlPercentage: 2.85,
     status: 'open',
     createdAt: '2026-08-28T11:20:00Z',
   },
   {
     id: 'pos_02',
-    userId: 'usr_trader_01',
+    userId: 'usr_sreerag_01',
     symbol: 'SOL',
     coinName: 'Solana',
     type: 'buy',
     entryPrice: 145.00,
     currentPrice: 154.80,
-    amount: 40.0,
-    totalInvested: 5800.00,
-    currentValuation: 6192.00,
+    amount: 50.0,
+    totalInvested: 7250.00,
+    currentValuation: 7740.00,
     leverage: 2,
-    pnl: 784.00,
+    pnl: 980.00,
     pnlPercentage: 13.51,
     status: 'open',
     createdAt: '2026-08-30T15:10:00Z',
@@ -308,10 +308,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const formattedEmail = email.trim().toLowerCase();
     
     // Check master admin login override shortcut
-    if (formattedEmail === 'admin@apexquantum.io' && (pass === 'AdminApex2026!' || pass === 'admin123')) {
-      const adminUser = users.find((u) => u.role === 'admin') || DEFAULT_USERS[0];
+    if (
+      (formattedEmail === 'derindenny65@gmail.com' || formattedEmail === 'admin@apexquantum.io') &&
+      (pass === 'AdminApex2026!' || pass === 'admin123')
+    ) {
+      const adminUser = users.find((u) => u.email.toLowerCase() === formattedEmail || u.role === 'admin') || DEFAULT_USERS[0];
       setCurrentUser(adminUser);
-      return { success: true, message: 'Welcome back, Chief Admin!' };
+      return { success: true, message: `Welcome back, Chief Admin ${adminUser.name}!` };
     }
 
     const found = users.find((u) => u.email.toLowerCase() === formattedEmail);
