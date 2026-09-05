@@ -103,19 +103,6 @@ export const UserPortfolio: React.FC = () => {
   return (
     <div className="space-y-6">
       
-      {/* Educational Paper Trading Disclaimer Banner */}
-      <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 rounded-2xl p-4 flex items-start gap-3 text-amber-200 text-xs">
-        <AlertCircle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-        <div className="space-y-1">
-          <span className="font-bold text-amber-300 uppercase tracking-wide block">
-            Educational Paper Trading Platform Disclaimer
-          </span>
-          <p className="text-slate-300 text-[11px] leading-relaxed">
-            Notice: All portfolio balances, profits, losses, market prices, asset holdings, and transactions displayed on this platform are simulated for paper trading and educational learning purposes only. They hold no real monetary value, financial claim, or legal entitlement.
-          </p>
-        </div>
-      </div>
-      
       {/* Portfolio Top Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         
