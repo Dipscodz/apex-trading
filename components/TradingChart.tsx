@@ -47,20 +47,20 @@ export const TradingChart: React.FC<TradingChartProps> = ({ coin, effectivePrice
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-xl font-extrabold text-white tracking-tight">{coin.name}</h2>
-              <span className="px-2 py-0.5 rounded-lg bg-slate-800 text-slate-300 font-mono text-xs font-bold">
-                {coin.symbol}/USD
+              <span className="px-2 py-0.5 rounded-lg bg-slate-800 text-sky-400 font-mono text-xs font-bold border border-sky-500/20">
+                {coin.symbol}/INR
               </span>
             </div>
-            <span className="text-xs text-slate-400 font-medium">Spot Perpetual Market</span>
+            <span className="text-xs text-slate-400 font-medium">BingX INR Perpetual Market</span>
           </div>
         </div>
 
         {/* Price & Stats */}
         <div className="flex items-center gap-6">
           <div>
-            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Price (USD)</span>
+            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Price (INR)</span>
             <span className="text-2xl font-extrabold text-white font-mono leading-tight">
-              ${effectivePrice.toLocaleString(undefined, { minimumFractionDigits: effectivePrice < 1 ? 4 : 2 })}
+              ₹{effectivePrice.toLocaleString('en-IN', { minimumFractionDigits: effectivePrice < 1 ? 4 : 2 })}
             </span>
           </div>
 
@@ -78,15 +78,15 @@ export const TradingChart: React.FC<TradingChartProps> = ({ coin, effectivePrice
 
           <div className="hidden lg:block">
             <span className="text-[10px] text-slate-400 uppercase font-semibold block">24h High</span>
-            <span className="text-sm font-bold text-white font-mono">
-              ${coin.high_24h.toLocaleString()}
+            <span className="text-sm font-bold text-emerald-400 font-mono">
+              ₹{coin.high_24h.toLocaleString('en-IN')}
             </span>
           </div>
 
           <div className="hidden lg:block">
             <span className="text-[10px] text-slate-400 uppercase font-semibold block">24h Low</span>
-            <span className="text-sm font-bold text-white font-mono">
-              ${coin.low_24h.toLocaleString()}
+            <span className="text-sm font-bold text-rose-400 font-mono">
+              ₹{coin.low_24h.toLocaleString('en-IN')}
             </span>
           </div>
         </div>
@@ -143,7 +143,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ coin, effectivePrice
               fontSize={11}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(val) => `$${val >= 1000 ? (val / 1000).toFixed(1) + 'k' : val}`}
+              tickFormatter={(val) => `₹${val >= 1000 ? (val / 1000).toFixed(1) + 'k' : val}`}
             />
             <Tooltip
               content={({ active, payload }) => {
@@ -153,10 +153,10 @@ export const TradingChart: React.FC<TradingChartProps> = ({ coin, effectivePrice
                     <div className="glass-panel p-3 rounded-xl border border-slate-700 text-xs space-y-1 shadow-2xl font-mono">
                       <div className="text-slate-400 font-sans font-medium">{data.timestamp}</div>
                       <div className="text-white font-bold text-sm">
-                        Price: ${data.price.toLocaleString(undefined, { minimumFractionDigits: data.price < 1 ? 4 : 2 })}
+                        Price: ₹{data.price.toLocaleString('en-IN', { minimumFractionDigits: data.price < 1 ? 4 : 2 })}
                       </div>
-                      <div className="text-slate-300 text-[11px]">High: ${data.high} | Low: ${data.low}</div>
-                      <div className="text-slate-400 text-[10px]">Vol: ${data.volume.toLocaleString()}</div>
+                      <div className="text-slate-300 text-[11px]">High: ₹{data.high} | Low: ₹{data.low}</div>
+                      <div className="text-slate-400 text-[10px]">Vol: ₹{data.volume.toLocaleString('en-IN')}</div>
                     </div>
                   );
                 }

@@ -38,12 +38,12 @@ export const MarketOverview: React.FC = () => {
         
         <div className="glass-panel p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
           <div>
-            <span className="text-xs text-slate-400 font-semibold block">Bitcoin Index</span>
+            <span className="text-xs text-slate-400 font-semibold block">Bitcoin Index (INR)</span>
             <span className="text-xl font-extrabold text-white font-mono leading-tight">
-              ${btcPrice.toLocaleString()}
+              ₹{btcPrice.toLocaleString('en-IN')}
             </span>
             <span className="text-[11px] text-emerald-400 font-medium flex items-center gap-1 mt-0.5">
-              <TrendingUp className="w-3 h-3" /> Live Market Standard
+              <TrendingUp className="w-3 h-3" /> BingX INR Spot Index
             </span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
@@ -70,7 +70,7 @@ export const MarketOverview: React.FC = () => {
           <div>
             <span className="text-xs text-slate-400 font-semibold block">24h Aggregate Volume</span>
             <span className="text-xl font-extrabold text-white font-mono leading-tight">
-              $58.4 Billion
+              ₹4,85,000 Cr
             </span>
             <span className="text-[11px] text-slate-400 font-medium block mt-0.5">
               Institutional Orderflow
@@ -88,7 +88,7 @@ export const MarketOverview: React.FC = () => {
               Ultra Low Latency
             </span>
             <span className="text-[11px] text-slate-400 font-medium block mt-0.5">
-              0.00ms Execution Time
+              0.00ms BingX Engine
             </span>
           </div>
           <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
@@ -146,10 +146,10 @@ export const MarketOverview: React.FC = () => {
               <tr>
                 <th className="py-3.5 px-4">#</th>
                 <th className="py-3.5 px-4">Asset</th>
-                <th className="py-3.5 px-4">Effective Price</th>
+                <th className="py-3.5 px-4">Effective Price (INR)</th>
                 <th className="py-3.5 px-4">24h Change</th>
                 <th className="py-3.5 px-4 hidden md:table-cell">24h High / Low</th>
-                <th className="py-3.5 px-4 hidden lg:table-cell">Market Cap</th>
+                <th className="py-3.5 px-4 hidden lg:table-cell">Market Cap (INR)</th>
                 <th className="py-3.5 px-4 text-right">Action</th>
               </tr>
             </thead>
@@ -175,7 +175,7 @@ export const MarketOverview: React.FC = () => {
                             {coin.name}
                           </span>
                           <span className="text-[10px] text-slate-400 uppercase font-semibold">
-                            {coin.symbol} / USD
+                            {coin.symbol} / INR
                           </span>
                         </div>
                       </div>
@@ -184,7 +184,7 @@ export const MarketOverview: React.FC = () => {
                     {/* Price */}
                     <td className="py-4 px-4 font-bold text-white text-sm">
                       <div className="flex items-center gap-2">
-                        <span>${effectivePrice.toLocaleString(undefined, { minimumFractionDigits: coin.current_price < 1 ? 4 : 2 })}</span>
+                        <span>₹{effectivePrice.toLocaleString('en-IN', { minimumFractionDigits: coin.current_price < 1 ? 4 : 2 })}</span>
                         {isPriceOverridden && (
                           <span className="px-1.5 py-0.5 text-[9px] rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
                             Custom Rate
@@ -210,14 +210,14 @@ export const MarketOverview: React.FC = () => {
                     {/* High/Low */}
                     <td className="py-4 px-4 hidden md:table-cell text-slate-400">
                       <div>
-                        <span className="text-emerald-400 font-semibold block">${coin.high_24h.toLocaleString()}</span>
-                        <span className="text-slate-500 text-[10px] block">${coin.low_24h.toLocaleString()}</span>
+                        <span className="text-emerald-400 font-semibold block">₹{coin.high_24h.toLocaleString('en-IN')}</span>
+                        <span className="text-slate-500 text-[10px] block">₹{coin.low_24h.toLocaleString('en-IN')}</span>
                       </div>
                     </td>
 
                     {/* Market Cap */}
                     <td className="py-4 px-4 hidden lg:table-cell text-slate-300 font-sans">
-                      ${(coin.market_cap / 1e9).toFixed(2)}B
+                      ₹{(coin.market_cap / 1e7).toFixed(2)} Cr
                     </td>
 
                     {/* Trade Button */}

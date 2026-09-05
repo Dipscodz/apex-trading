@@ -50,7 +50,7 @@ export const Navbar: React.FC = () => {
               return (
                 <div key={coin.id} className="flex items-center gap-2 font-mono text-[11px]">
                   <span className="font-semibold text-slate-300">{coin.symbol}</span>
-                  <span className="text-white">${coin.current_price.toLocaleString()}</span>
+                  <span className="text-white">₹{coin.current_price.toLocaleString('en-IN')}</span>
                   <span className={`font-semibold ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {isPositive ? '+' : ''}{coin.price_change_percentage_24h}%
                   </span>
@@ -72,10 +72,10 @@ export const Navbar: React.FC = () => {
             </div>
             <div>
               <span className="font-bold text-lg text-white tracking-tight block leading-tight">
-                Apex<span className="text-sky-400 font-extrabold">Quantum</span>
+                Apex<span className="text-sky-400 font-extrabold">BingX</span>
               </span>
               <span className="text-[10px] text-slate-400 font-semibold tracking-widest uppercase block">
-                Institutional Terminal
+                INR Live Terminal
               </span>
             </div>
           </Link>
@@ -131,9 +131,9 @@ export const Navbar: React.FC = () => {
                 <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
                   <Wallet className="w-4 h-4 text-sky-400" />
                   <div className="flex flex-col text-right">
-                    <span className="text-[10px] text-slate-400 font-medium leading-none">Net Equity</span>
-                    <span className="font-bold text-white font-mono leading-tight">
-                      ${totalValuation.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    <span className="text-[10px] text-slate-400 font-medium leading-none">Net Equity (INR)</span>
+                    <span className="font-bold text-emerald-400 font-mono leading-tight">
+                      ₹{totalValuation.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>

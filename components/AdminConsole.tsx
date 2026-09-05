@@ -230,7 +230,7 @@ export const AdminConsole: React.FC = () => {
 
                     {/* Balance */}
                     <td className="py-4 px-4 font-bold text-white text-sm">
-                      ${u.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      ₹{u.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </td>
 
                     {/* Multiplier */}
@@ -257,7 +257,7 @@ export const AdminConsole: React.FC = () => {
                           {userOverrides.map((ov) => (
                             <div key={ov.symbol} className="flex items-center gap-1.5 text-[11px]">
                               <span className="font-bold text-sky-400">{ov.symbol}:</span>
-                              <span className="font-mono text-emerald-300">${ov.overridePrice.toLocaleString()}</span>
+                              <span className="font-mono text-emerald-300">₹{ov.overridePrice.toLocaleString('en-IN')}</span>
                               <button
                                 onClick={() => removeUserPriceOverride(u.id, ov.symbol)}
                                 className="text-rose-400 hover:text-rose-300 text-[10px] font-bold"

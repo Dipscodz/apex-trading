@@ -107,7 +107,7 @@ export const TradeOrderPanel: React.FC<TradeOrderPanelProps> = ({ coin, effectiv
             <div className="flex items-center justify-between text-xs font-semibold text-slate-300 mb-1">
               <span>Order Size ({coin.symbol})</span>
               <span className="text-slate-400 text-[11px]">
-                Est. Price: ${effectivePrice.toLocaleString()}
+                Est. Price: ₹{effectivePrice.toLocaleString('en-IN')}
               </span>
             </div>
             <div className="relative">
@@ -145,7 +145,7 @@ export const TradeOrderPanel: React.FC<TradeOrderPanelProps> = ({ coin, effectiv
           {/* Leverage Selector */}
           <div>
             <div className="flex items-center justify-between text-xs font-semibold text-slate-300 mb-1">
-              <span>Execution Leverage</span>
+              <span>BingX Execution Leverage</span>
               <span className="text-sky-400 font-mono font-bold">{leverage}x</span>
             </div>
             <div className="grid grid-cols-5 gap-1 text-xs font-bold">
@@ -169,18 +169,18 @@ export const TradeOrderPanel: React.FC<TradeOrderPanelProps> = ({ coin, effectiv
           {/* Trade Summary breakdown */}
           <div className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-1.5 text-xs font-mono">
             <div className="flex justify-between text-slate-400">
-              <span>Position Value:</span>
-              <span className="text-white font-bold">${positionValuation.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span>Position Value (INR):</span>
+              <span className="text-white font-bold">₹{positionValuation.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             <div className="flex justify-between text-slate-400">
               <span>Required Margin:</span>
-              <span className="text-sky-400 font-bold">${marginRequired.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className="text-sky-400 font-bold">₹{marginRequired.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </div>
             {currentUser && (
               <div className="flex justify-between text-slate-400 pt-1 border-t border-slate-800">
                 <span>Available Cash:</span>
                 <span className={`font-bold ${currentUser.balance >= marginRequired ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  ${currentUser.balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{currentUser.balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
             )}
