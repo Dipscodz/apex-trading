@@ -112,13 +112,13 @@ export const Navbar: React.FC = () => {
 
             {currentUser?.role === 'admin' && (
               <Link
-                href="/admin"
+                href="/secure-admin-dashboard"
                 className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  pathname === '/admin' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/40' : 'text-emerald-400 hover:bg-emerald-950/50'
+                  pathname === '/secure-admin-dashboard' || pathname === '/admin' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/40' : 'text-emerald-400 hover:bg-emerald-950/50'
                 }`}
               >
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Admin Console</span>
+                <span>Executive Dashboard</span>
               </Link>
             )}
           </nav>

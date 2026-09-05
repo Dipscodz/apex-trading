@@ -94,4 +94,25 @@ export interface AdminAuditLog {
   timestamp: string;
 }
 
+export type AdminTab =
+  | 'dashboard'
+  | 'users'
+  | 'analytics'
+  | 'revenue'
+  | 'transactions'
+  | 'reports'
+  | 'audit'
+  | 'system';
+
+export type ComparisonPeriod = 'daily' | 'weekly' | 'monthly';
+
+export interface NetProfitMetrics {
+  currentProfit: number;
+  previousProfit: number;
+  absoluteChange: number;
+  percentageChange: number;
+  period: ComparisonPeriod;
+}
+
+
 
