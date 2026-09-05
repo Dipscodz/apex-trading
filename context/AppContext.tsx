@@ -545,7 +545,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!currentUser) return { success: false, message: 'Not authenticated' };
     if (amount <= 0) return { success: false, message: 'Invalid deposit amount' };
 
-    // Auto-approve deposit for seamless user demo experience
+    // Auto-approve deposit for seamless user experience
     const newBalance = currentUser.balance + amount;
     const updatedUser = { ...currentUser, balance: newBalance };
     setCurrentUser(updatedUser);
@@ -559,12 +559,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       type: 'deposit',
       amount,
       status: 'completed',
-      details: 'Instant Bank Wire Deposit',
+      details: 'Instant Bank Wire Deposit (INR)',
       createdAt: new Date().toISOString(),
     };
     setTransactions((prev) => [tx, ...prev]);
 
-    return { success: true, message: `Deposit of $${amount.toLocaleString()} credited successfully!` };
+    // Append Performance Data Point for history graph
+    const newPerfPoint: PerformanceDataPoint = {
+      id: `perf_${Date.now()}`,
+      userId: currentUser.id,
+      timestamp: new Date().toLocaleDateString('en-IN', { month: 'short', day: '2-digit' }),
+      eventPnl: amount,
+      portfolioValue: newBalance,
+    };
+    setPerformanceDataPoints((prev) => [...prev, newPerfPoint]);
+
+    return { success: true, message: `Deposit of ₹${amount.toLocaleString('en-IN')} credited successfully!` };
   };
 
   const requestWithdrawal = (amount: number) => {
@@ -573,6 +583,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, message: 'Insufficient wallet balance for withdrawal' };
     }
 
+    // Immediately reflect withdrawal in user cash balance & portfolio valuation
+    const newBalance = Math.max(0, currentUser.balance - amount);
+    const updatedUser = { ...currentUser, balance: newBalance };
+    setCurrentUser(updatedUser);
+    setUsers((prev) => prev.map((u) => (u.id === currentUser.id ? updatedUser : u)));
+
     const tx: TransactionRecord = {
       id: `tx_${Date.now()}`,
       userId: currentUser.id,
@@ -580,13 +596,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userEmail: currentUser.email,
       type: 'withdrawal',
       amount,
-      status: 'pending',
-      details: 'Withdrawal request to external bank account',
+      status: 'completed',
+      details: 'Bank Wire Withdrawal (INR)',
       createdAt: new Date().toISOString(),
     };
     setTransactions((prev) => [tx, ...prev]);
 
-    return { success: true, message: `Withdrawal request for $${amount.toLocaleString()} submitted for compliance review.` };
+    // Append Performance Data Point for history graph
+    const newPerfPoint: PerformanceDataPoint = {
+      id: `perf_${Date.now()}`,
+      userId: currentUser.id,
+      timestamp: new Date().toLocaleDateString('en-IN', { month: 'short', day: '2-digit' }),
+      eventPnl: -amount,
+      portfolioValue: newBalance,
+    };
+    setPerformanceDataPoints((prev) => [...prev, newPerfPoint]);
+
+    return { success: true, message: `Withdrawal of ₹${amount.toLocaleString('en-IN')} processed successfully!` };
   };
 
   // Admin Controls
