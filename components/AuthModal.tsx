@@ -173,8 +173,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   const fillDemoUser = () => {
-    setEmail('trader@apexquantum.io');
-    setPassword('trader123');
+    setEmail('sreeragmsm@gmail.com');
+    setPassword('sreerag123');
     setActiveTab('login');
     setOtpStep(false);
     setOtp('');
