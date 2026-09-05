@@ -52,7 +52,7 @@ export const AdminConsole: React.FC = () => {
   const {
     currentUser,
     users,
-    userPriceOverrides,
+    adminOverrides,
     updateUserBalance,
     setUserPriceOverride,
     removeUserPriceOverride,
@@ -447,7 +447,7 @@ export const AdminConsole: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 font-mono">
                   {filteredUsers.map((u) => {
-                    const userOverrides = userPriceOverrides.filter((o) => o.userId === u.id);
+                    const userOverrides = adminOverrides.filter((o) => o.userId === u.id);
                     return (
                       <tr key={u.id} className="hover:bg-slate-800/40 transition-colors">
                         <td className="py-4 px-4 font-sans">
